@@ -4,7 +4,7 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-# Hi 👋 ,
+# 👋 Hi!
 
 I'm Jordan Aguilar (aka. [Flygerth](https://app.hackthebox.com/profile/1384315){:target="_blank"}), a student and cybersecurity enthusiast passionate about learning new technologies in order to develop professionally. Experienced in controlled environments such as Hack The Box or CTF's.
 Currently preparing for the [PNPT](https://certifications.tcm-sec.com/pnpt/){:target="_blank"}, I have created this website to share with you my knowledge in cybersecurity and document the machines I am doing in the form of **Writeup's**.
