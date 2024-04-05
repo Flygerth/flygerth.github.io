@@ -153,5 +153,5 @@ cat /root/root.txt
 f49**************************88f
 ```
 
-Thanks for reading! 🙌 🙌 🙌
-
+<h2 style="text-align:center;">Thanks for reading! 🙌 🙌 🙌</h2>
+{: data-toc-skip='' .mt-4 .mb-0 }
