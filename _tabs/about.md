@@ -4,7 +4,7 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-# 👋 Hi, 
+# 👋 Hi! 
 
 I'm Jordan Aguilar ([Flygerth](https://app.hackthebox.com/profile/1384315){:target="_blank"}), a Systems Engineering graduate and a security researcher at heart. I’ve always been fascinated by how complex systems work—and more importantly, how they can be bypassed. I find a lot of satisfaction in the technical challenge of breaking down a hardened environment and finding that one overlooked vulnerability that grants access.
 
