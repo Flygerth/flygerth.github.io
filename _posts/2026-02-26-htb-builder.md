@@ -2,7 +2,7 @@
 title: Builder
 date: 2026-02-26
 categories: [CTFs, HackTheBox]
-tags: [linux, cve, jenkins, docker]
+tags: [linux, cve-2024-23897, jenkins, jenkins-cli, file-read, docker, jenkins-creds]
 media_subpath: /assets/img/HackTheBox/Builder
 image: 
     path: Builder.webp

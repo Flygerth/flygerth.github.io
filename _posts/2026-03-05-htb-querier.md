@@ -2,7 +2,7 @@
 title: Querier
 date: 2026-03-05
 categories: [CTFs, HackTheBox]
-tags: [windows, crackmapexec, smbmap, olevba, mssql, xp_dirtree, xp_cmdshell, powerup, gpp-decrypt]
+tags: [windows, crackmapexec, smbmap, olevba, mssql, xp_dirtree, ntlm_capture, xp_cmdshell, powerup, gpp-decrypt]
 media_subpath: /assets/img/HackTheBox/Querier
 image: 
     path: Querier.webp

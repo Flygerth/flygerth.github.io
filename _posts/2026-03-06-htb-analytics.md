@@ -2,7 +2,7 @@
 title: Analytics
 date: 2026-03-06
 categories: [CTFs, HackTheBox]
-tags: [linux, subdomain, cve, docker, env, gameoverlay]
+tags: [linux, subdomain, cve-2023-38646, docker, env, gameoverlay, cve-2023-2640]
 media_subpath: /assets/img/HackTheBox/Analytics
 image: 
     path: Analytics.webp
@@ -165,5 +165,5 @@ cat /root/root.txt
 f49**************************88f
 ```
 
-<h2 style="text-align:center;">Thanks for reading! 🙌 🙌 🙌</h2>
+<h2 style="text-align:center;">Thanks for stopping by. Catch you in the next one! 🏁    🔍</h2>
 {: data-toc-skip='' .mt-4 .mb-0 }
