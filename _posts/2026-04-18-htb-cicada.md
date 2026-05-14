@@ -2,7 +2,7 @@
 title: Cicada
 date: 2026-04-18
 categories: [CTFs, HackTheBox]
-tags: [windows, ad, netexec, enumeration, rid-cycling]
+tags: [windows, ad, netexec, enumeration, rid-cycling, password-hunting, backup-operators, system, ntds]
 media_subpath: /assets/img/HackTheBox/Cicada
 image: 
     path: Cicada.webp
